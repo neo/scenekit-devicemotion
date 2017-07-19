@@ -9,6 +9,7 @@
 import UIKit
 import QuartzCore
 import SceneKit
+import CoreMotion
 
 class GameViewController: UIViewController {
 
@@ -43,8 +44,13 @@ class GameViewController: UIViewController {
         // retrieve the ship node
         let ship = scene.rootNode.childNode(withName: "ship", recursively: true)!
         
-        // animate the 3d object
-        ship.runAction(SCNAction.repeatForever(SCNAction.rotateBy(x: 0, y: 2, z: 0, duration: 1)))
+        // animate the 3d object (neo)
+        let motionManager = CMMotionManager()
+        motionManager.startDeviceMotionUpdates(to: OperationQueue.main, withHandler: { (deviceMotion, error) in
+            ship.eulerAngles.x = Float(Double.pi / 2 - (motionManager.deviceMotion?.attitude.pitch)!)
+            ship.eulerAngles.y = Float(-(motionManager.deviceMotion?.attitude.roll)!)
+            ship.eulerAngles.z = Float(-(motionManager.deviceMotion?.attitude.yaw)!)
+        })
         
         // retrieve the SCNView
         let scnView = self.view as! SCNView
@@ -53,7 +59,7 @@ class GameViewController: UIViewController {
         scnView.scene = scene
         
         // allows the user to manipulate the camera
-        scnView.allowsCameraControl = true
+        // scnView.allowsCameraControl = true
         
         // show statistics such as fps and timing information
         scnView.showsStatistics = true
